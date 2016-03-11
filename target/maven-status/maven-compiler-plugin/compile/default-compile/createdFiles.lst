@@ -1,0 +1,8 @@
+com/arquitectura/dto/MetricsPosition.class
+com/arquitectura/metricas/App.class
+com/arquitectura/metricas/AppConfig.class
+com/arquitectura/metricas/rest/RegisterMetricsRest.class
+com/arquitectura/dto/MetricsHealth.class
+com/arquitectura/metricas/rest/SearchMetricsRest.class
+com/arquitectura/metricas/AppConfig$JerseyConfig.class
+com/arquitectura/dto/ErrorMessage.class

@@ -21,6 +21,7 @@ public class RedisService implements IRedisService {
 		  String value = "";
 		 try {
 			 Jedis jedis = new Jedis("localhost"); 
+			 //Jedis jedis = new Jedis("172.24.41.40", 6379);
 		      value = jedis.get(idCollar);
 		} catch (Exception e) {
 			  LOGGER.error("Error trying get data redis", e);

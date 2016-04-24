@@ -33,7 +33,7 @@ public enum TopicEnum {
      */
     public static List<String> getIdArray() {
 
-        List<String> ids = new ArrayList<String>();
+        List<String> ids = new ArrayList<>();
 
         for (TopicEnum topicEnum : TopicEnum.values()) {
             ids.add(topicEnum.getId());

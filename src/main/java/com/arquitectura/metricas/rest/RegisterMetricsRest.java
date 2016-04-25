@@ -29,6 +29,7 @@ import com.arquitectura.metricas.service.IProducerService;
 public class RegisterMetricsRest {
 	public static final String CODE = "NO_FOUND";
     public static final String DESCRIPCION = "Error acediendo al servidor";
+    public static final String MODIFICADA = "La trama fue modificada";
     private static final Logger LOGGER = LoggerFactory.getLogger(RegisterMetricsRest.class);
     
     @Autowired
@@ -39,21 +40,24 @@ public class RegisterMetricsRest {
     @Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResponseStatus(HttpStatus.OK)
-	public Response registerLocalization(MetricsPosition  metrics){
-	       DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	       String dateString = format.format(new Date());
-		   metrics.setBeginDate(dateString);
-		try {
-			producerService.sendPosition(TopicEnum.POSITION_TOPIC, metrics);
-		} catch (Exception e) {
-			LOGGER.error("Error receiving requet metrics-position [{}]", 
-					metrics.toString(), e);
-			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
+	public Response registerLocalization(MetricsPosition  metrics) {
+		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+		String dateString = format.format(new Date());
+		metrics.setBeginDate(dateString);
+		if ("true".equals(metrics.getIsValid())) {
+			try {
+				producerService.sendPosition(TopicEnum.POSITION_TOPIC, metrics);
+			} catch (Exception e) {
+				LOGGER.error("Error receiving requet metrics-position [{}]", 
+						metrics.toString(), e);
+				return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
+			}
+			return Response.ok().build();
+		} else {
+			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,MODIFICADA)).build();
 		}
-		return Response.ok().build();
 	}
-	
-
+			
 	@POST
     @Path("/metrics-health")
     @Consumes(MediaType.APPLICATION_JSON)

@@ -13,6 +13,10 @@ public class MetricsPosition {
 	
 	private String longitude;
 	
+	private String signature;
+	
+	private String isValid;
+	
 	@JsonInclude(Include.NON_NULL)
 	private String beginDate;
 	
@@ -45,7 +49,19 @@ public class MetricsPosition {
 	public String toString() {
 		return "MetricsPosition [idCollar=" + idCollar + ", latitude="
 				+ latitude + ", longitude=" + longitude + ", beginDate="
-				+ beginDate + "]";
+				+ beginDate + ", signature=" + signature + ", isValid=" + isValid + "]";
+	}
+	public String getSignature() {
+		return signature;
+	}
+	public void setSignature(String signature) {
+		this.signature = signature;
+	}
+	public String getIsValid() {
+		return isValid;
+	}
+	public void setIsValid(String isValid) {
+		this.isValid = isValid;
 	}
     
 

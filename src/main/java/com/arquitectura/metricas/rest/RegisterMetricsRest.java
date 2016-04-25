@@ -29,51 +29,35 @@ import com.arquitectura.metricas.service.IProducerService;
 public class RegisterMetricsRest {
 	public static final String CODE = "NO_FOUND";
     public static final String DESCRIPCION = "Error acediendo al servidor";
-<<<<<<< HEAD
     public static final String MODIFICADA = "La trama fue modificada";
-=======
     private static final Logger LOGGER = LoggerFactory.getLogger(RegisterMetricsRest.class);
     
     @Autowired
     private IProducerService producerService;
->>>>>>> 4de6859ed91bc5463abfb3bc6ef82c38c57139d7
     
 	@POST
     @Path("/metrics-position")
     @Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	@ResponseStatus(HttpStatus.OK)
-<<<<<<< HEAD
-	public Response registerLocalization(MetricsPosition  metrica) {
-		IProducerService producer = new ProducerService();
+	public Response registerLocalization(MetricsPosition  metrics) {
 		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		String DateToStr = format.format(new Date());
-		metrica.setBeginDate(DateToStr);
-		if ("true".equals(metrica.getIsValid())) {
+		String dateString = format.format(new Date());
+		metrics.setBeginDate(dateString);
+		if ("true".equals(metrics.getIsValid())) {
 			try {
-				producer.sendPosition(TopicEnum.POSITION_TOPIC, metrica);
+				producerService.sendPosition(TopicEnum.POSITION_TOPIC, metrics);
 			} catch (Exception e) {
+				LOGGER.error("Error receiving requet metrics-position [{}]", 
+						metrics.toString(), e);
 				return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
 			}
 			return Response.ok().build();
 		} else {
 			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,MODIFICADA)).build();
-=======
-	public Response registerLocalization(MetricsPosition  metrics){
-	       DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	       String dateString = format.format(new Date());
-		   metrics.setBeginDate(dateString);
-		try {
-			producerService.sendPosition(TopicEnum.POSITION_TOPIC, metrics);
-		} catch (Exception e) {
-			LOGGER.error("Error receiving requet metrics-position [{}]", 
-					metrics.toString(), e);
-			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
->>>>>>> 4de6859ed91bc5463abfb3bc6ef82c38c57139d7
 		}
 	}
-
-
+			
 	@POST
     @Path("/metrics-health")
     @Consumes(MediaType.APPLICATION_JSON)

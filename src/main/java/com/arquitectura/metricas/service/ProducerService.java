@@ -18,9 +18,6 @@ import com.arquitectura.dto.TopicEnum;
 @Service
 public class ProducerService implements IProducerService {
 
-    /**
-     * Logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerService.class);
     
     public static final String KEY_SERIALIZAER = "org.apache.kafka.common.serialization.StringSerializer";
@@ -28,10 +25,9 @@ public class ProducerService implements IProducerService {
     /**
      * Propiedades del productor
      */
-    private Properties props;
-
-    @Override
-    public void sendHealth(TopicEnum topicEnum, MetricsHealth metricRequest) {
+    private static Properties props;
+    
+    public ProducerService(){
     	props = new Properties();
         props.put("bootstrap.servers", "localhost:9092");
         props.put("acks", "all");
@@ -41,7 +37,12 @@ public class ProducerService implements IProducerService {
         props.put("buffer.memory", 33554432);
         props.put("key.serializer", KEY_SERIALIZAER);
         props.put("value.serializer", KEY_SERIALIZAER);
-    	 try (Producer<String, String> producer = new KafkaProducer<>(props)) {
+    }
+    
+    
+    @Override
+    public void sendHealth(TopicEnum topicEnum, MetricsHealth metricRequest) {
+    	try (Producer<String, String> producer = new KafkaProducer<>(props)) {
         	ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(metricRequest);
             producer.send(new ProducerRecord<>(topicEnum.getId(),
@@ -56,16 +57,7 @@ public class ProducerService implements IProducerService {
     
     @Override
     public void sendPosition(TopicEnum topicEnum, MetricsPosition metricRequest){
-    	props = new Properties();
-        props.put("bootstrap.servers", "localhost:9092");
-        props.put("acks", "all");
-        props.put("retries", 0);
-        props.put("batch.size", 16384);
-        props.put("linger.ms", 1);
-        props.put("buffer.memory", 33554432);
-        props.put("key.serializer", KEY_SERIALIZAER);
-        props.put("value.serializer", KEY_SERIALIZAER);
-    	 try (Producer<String, String> producer = new KafkaProducer<>(props)) {
+    	try (Producer<String, String> producer = new KafkaProducer<>(props)) {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(metricRequest);
             producer.send(new ProducerRecord<>(topicEnum.getId(),
@@ -76,5 +68,5 @@ public class ProducerService implements IProducerService {
                     metricRequest.toString(), e);
         }
     }
-
+    
 }

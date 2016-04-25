@@ -1,7 +1,5 @@
 package com.arquitectura.metricas.rest;
 
-import java.io.IOException;
-
 import javax.inject.Named;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -12,15 +10,17 @@ import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import com.arquitectura.dto.ErrorMessage;
 import com.arquitectura.dto.MetricsHealth;
 import com.arquitectura.dto.MetricsPosition;
 import com.arquitectura.metricas.service.IRedisService;
-import com.arquitectura.metricas.service.ProducerService;
-import com.arquitectura.metricas.service.RedisService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Controller
 public class SearchMetricsRest {
 	
-	private static final Logger LOGGER = LoggerFactory.getLogger(ProducerService.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(SearchMetricsRest.class);
 	public static final String CODE = "NO_FOUND";
     public static final String DESCRIPCION = "No existe informacion del collar";
     public static final String HEALTH = "HEALTH";
@@ -38,17 +38,22 @@ public class SearchMetricsRest {
     public static final String DESCRIPCION_ERROR = "Error acediendo al servidor";
     public static final String DESCRIPCION_JSON = "Error serializando datos";
 	
+    @Value("${redis.server}")
+    private String redisServer;
+    
+    @Autowired
+    private IRedisService redisService;
+    
     @GET
 	@Path("metrics-position")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getLocalization(@QueryParam("idCollar") String idCollar){
 				
 		ObjectMapper mapper = new ObjectMapper();
-		IRedisService redis = new RedisService();
 		String register = "";
 		MetricsPosition metric = new MetricsPosition();
 		try {
-			register = redis.getRegister(idCollar+"-"+POSITION);
+			register = redisService.getRegister(idCollar+"-"+POSITION,redisServer);
 	        if(register == null){
 		         return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
 		    }	        
@@ -57,9 +62,12 @@ public class SearchMetricsRest {
             LOGGER.error("Error serializando objeto", e);
 			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION_JSON)).build();
 			
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-			LOGGER.error("Error en getLocalization :", e);
+		} catch(JedisConnectionException e){
+            LOGGER.error("Error conexión redis", e);
+			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,e.getMessage() + " puerto: " +redisServer)).build();			
+		}		
+		catch (Exception e) {
+			LOGGER.error("Error general en getLocalization :", e);
 			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,e.getMessage())).build();
 		}
 
@@ -71,10 +79,9 @@ public class SearchMetricsRest {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getInformationHealth(@QueryParam("idCollar") String idCollar){
 		ObjectMapper mapper = new ObjectMapper();
-		IRedisService redis = new RedisService();
 		String register = "";
 		try {
-		    register = redis.getRegister(idCollar+"-"+HEALTH);
+		    register = redisService.getRegister(idCollar+"-"+HEALTH,redisServer);
 		    if(register == null){
 		         return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION)).build();
 		    }
@@ -83,9 +90,10 @@ public class SearchMetricsRest {
 		} catch(JsonParseException | JsonMappingException e){
 			LOGGER.error("Error serializando objeto", e);
 			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,DESCRIPCION_JSON)).build();
-			
+		}catch(JedisConnectionException e){
+            LOGGER.error("Error conexión redis", e);
+			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,e.getMessage() + " puerto: " +redisServer)).build();				
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
 			LOGGER.error("Error en getInformationHealth :", e);
 			return Response.status(HttpStatus.NOT_FOUND.value()).entity(new ErrorMessage(CODE,e.getMessage())).build();
 		}

@@ -5,28 +5,24 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 @Service
 public class RedisService implements IRedisService {
 	
-    /**
-     * Logger
-     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ProducerService.class);
-    
-        
+    public static final String SERVER_LOCAL = "localhost";
+      
     @Override
-	public String getRegister(String idCollar)  throws Exception{
-		  System.out.println("idCollar"+idCollar);
+	public String getRegister(String idCollar,String redisServer){
 		  String value = "";
-		 try {
-			 Jedis jedis = new Jedis("localhost"); 
-			 //Jedis jedis = new Jedis("172.24.41.40", 6379);
+		  try {
+			  Jedis jedis = new Jedis(redisServer, 6379);
 		      value = jedis.get(idCollar);
-		} catch (Exception e) {
-			  LOGGER.error("Error trying get data redis", e);
+		 } catch (JedisConnectionException e) {
+			  LOGGER.error("Error trying get connection redis", e);
 		      throw e;
-		}
+		 } 
 
 		return value;
 	}
